@@ -23,8 +23,41 @@ export default function LoginSuccessPage() {
   }, []);
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    router.push("/");
+    try {
+      // APIルート経由でサインアウト（CORS対応）
+      const response = await fetch("/api/auth/signout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("サインアウトAPIエラー:", errorData);
+      } else {
+        const data = await response.json();
+        console.log("サインアウト成功:", data);
+      }
+
+      // クライアントサイドでもサインアウト処理を実行
+      try {
+        await supabase.auth.signOut();
+      } catch (supabaseError) {
+        console.log("Supabase client signout handled server-side");
+      }
+
+      // ブラウザストレージもクリア
+      if (typeof window !== "undefined") {
+        localStorage.clear();
+        sessionStorage.clear();
+      }
+    } catch (err) {
+      console.error("サインアウト処理中に例外が発生しました:", err);
+    } finally {
+      // エラーがあってもなくてもホームページにリダイレクト
+      router.push("/");
+    }
   };
 
   const handleBackToHome = () => {
