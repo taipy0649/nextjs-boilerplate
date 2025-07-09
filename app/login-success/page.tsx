@@ -56,8 +56,9 @@ export default function LoginSuccessPage() {
           style={{
             padding: "8px 16px",
             marginRight: 8,
-            background: "#f0f0f0",
-            border: "1px solid #ddd",
+            background: "#1976d2",
+            color: "white",
+            border: "none",
             borderRadius: 4,
             cursor: "pointer",
           }}
