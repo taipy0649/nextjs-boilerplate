@@ -1,9 +1,51 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import { supabase } from "../lib/supabaseClient";
 
 export default function Home() {
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+
+    const checkSession = async () => {
+      const { data } = await supabase.auth.getSession();
+      setUser(data?.session?.user || null);
+      setLoading(false);
+    };
+
+    checkSession();
+  }, []);
+
   return (
     <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
+      <header className="w-full flex justify-end px-4 py-2 absolute top-0">
+        {mounted &&
+          (loading ? (
+            <div className="p-2">読み込み中...</div>
+          ) : user ? (
+            <div className="flex gap-4">
+              <span className="p-2">{user.email}</span>
+              <Link href="/login-success">
+                <button className="rounded-full border border-solid border-green-500 bg-green-500 text-white px-6 py-2 font-semibold hover:bg-green-600 transition-colors">
+                  マイページ
+                </button>
+              </Link>
+            </div>
+          ) : (
+            <Link href="/login">
+              <button className="rounded-full border border-solid border-blue-500 bg-blue-500 text-white px-6 py-2 font-semibold hover:bg-blue-600 transition-colors">
+                ログイン
+              </button>
+            </Link>
+          ))}
+      </header>
+
       <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
         <Image
           className="dark:invert"
@@ -14,13 +56,6 @@ export default function Home() {
           priority
         />
         <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <div className="mt-6 flex justify-center">
-            <Link href="/login">
-              <button className="rounded-full border border-solid border-blue-500 bg-blue-500 text-white px-6 py-2 font-semibold hover:bg-blue-600 transition-colors">
-                ログイン
-              </button>
-            </Link>
-          </div>
           <li className="mb-2 tracking-[-.01em]">
             Get started by editing{" "}
             <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
