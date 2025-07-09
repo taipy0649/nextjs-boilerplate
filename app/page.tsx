@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 
 export default function Home() {
   return (
@@ -13,6 +14,13 @@ export default function Home() {
           priority
         />
         <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
+          <div className="mt-6 flex justify-center">
+            <Link href="/login">
+              <button className="rounded-full border border-solid border-blue-500 bg-blue-500 text-white px-6 py-2 font-semibold hover:bg-blue-600 transition-colors">
+                ログイン
+              </button>
+            </Link>
+          </div>
           <li className="mb-2 tracking-[-.01em]">
             Get started by editing{" "}
             <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
