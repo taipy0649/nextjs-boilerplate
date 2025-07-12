@@ -5,12 +5,16 @@ import { useRouter } from "next/navigation";
 import { Save, RefreshCw } from "lucide-react";
 import AppLayout from "../../components/AppLayout";
 import { createJournalEntry } from "../../lib/database";
-import { getRandomPrompt } from "../../lib/utils";
+import { getRandomPrompt, JOURNAL_PROMPTS } from "../../lib/utils";
 import { supabase } from "../../lib/supabaseClient";
 
 export default function JournalPage() {
   const router = useRouter();
-  const [prompt, setPrompt] = useState("");
+  const [userId, setUserId] = useState<string | null>(null);
+  const [promptObj, setPromptObj] = useState<{
+    code: string;
+    prompt: string;
+  } | null>(null);
   const [content, setContent] = useState("");
   const [loading, setLoading] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -24,14 +28,15 @@ export default function JournalPage() {
         router.push("/login");
         return;
       }
+      setUserId(data.session.user.id);
     };
 
     checkAuth();
-    setPrompt(getRandomPrompt());
+    getRandomPromptObj();
   }, [router]);
 
   const handleNewPrompt = () => {
-    setPrompt(getRandomPrompt());
+    getRandomPromptObj();
     setContent("");
   };
 
@@ -43,18 +48,36 @@ export default function JournalPage() {
       return;
     }
 
+    if (!userId || !promptObj) {
+      alert("ユーザー情報またはプロンプト情報が取得できませんでした");
+      return;
+    }
+
     setLoading(true);
 
     try {
-      const { error } = await createJournalEntry(prompt, content);
+      // APIを使用してジャーナルを保存
+      const response = await fetch("/api/journal", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userId,
+          promptId: promptObj.code,
+          answer: content,
+        }),
+      });
 
-      if (error) {
-        console.error("ジャーナル保存エラー:", error);
-        alert("ジャーナルの保存に失敗しました");
+      const result = await response.json();
+
+      if (!response.ok) {
+        console.error("ジャーナル保存エラー:", result.error);
+        alert(`ジャーナルの保存に失敗しました: ${result.error}`);
       } else {
         alert("ジャーナルを保存しました！");
         setContent("");
-        setPrompt(getRandomPrompt());
+        getRandomPromptObj();
       }
     } catch (err) {
       console.error("ジャーナル処理中にエラーが発生しました:", err);
@@ -62,6 +85,11 @@ export default function JournalPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const getRandomPromptObj = () => {
+    const randomIndex = Math.floor(Math.random() * JOURNAL_PROMPTS.length);
+    setPromptObj(JOURNAL_PROMPTS[randomIndex]);
   };
 
   if (!mounted) {
@@ -103,7 +131,9 @@ export default function JournalPage() {
             </button>
           </div>
           <div className="bg-gray-50 rounded-lg p-4">
-            <p className="text-gray-800 font-medium">{prompt}</p>
+            <p className="text-gray-800 font-medium">
+              {promptObj?.prompt || "プロンプトを読み込み中..."}
+            </p>
           </div>
         </div>
 

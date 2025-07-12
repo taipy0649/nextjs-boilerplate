@@ -12,6 +12,7 @@ import type { MoodLevel, StressLevel } from "../../lib/types";
 
 export default function RecordPage() {
   const router = useRouter();
+  const [userId, setUserId] = useState<string | null>(null);
   const [mood, setMood] = useState<MoodLevel | null>(3); // デフォルト値：真ん中（ふつう）
   const [stress, setStress] = useState<StressLevel | null>(5); // デフォルト値：5
   const [memo, setMemo] = useState("");
@@ -25,7 +26,9 @@ export default function RecordPage() {
       const { data } = await supabase.auth.getSession();
       if (!data?.session) {
         router.push("/login");
+        return;
       }
+      setUserId(data.session.user.id);
     };
 
     checkAuth();
@@ -34,18 +37,38 @@ export default function RecordPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (!mood || !stress) {
+      alert("気分とストレスレベルを選択してください");
+      return;
+    }
+
+    if (!userId) {
+      alert("ユーザー情報が取得できませんでした");
+      return;
+    }
+
     setLoading(true);
 
     try {
-      const { error } = await createMoodEntry(
-        mood!,
-        stress!,
-        memo || undefined
-      );
+      // APIを使用して気分を保存
+      const response = await fetch("/api/mood", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userId,
+          moodId: mood,
+          stressLevel: stress,
+          memo: memo || undefined,
+        }),
+      });
 
-      if (error) {
-        console.error("記録エラー:", error);
-        alert("記録の保存に失敗しました");
+      const result = await response.json();
+
+      if (!response.ok) {
+        console.error("記録エラー:", result.error);
+        alert(`記録の保存に失敗しました: ${result.error}`);
       } else {
         alert("記録を保存しました！");
         router.push("/dashboard");
