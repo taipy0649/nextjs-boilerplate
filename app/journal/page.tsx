@@ -4,8 +4,8 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Save, RefreshCw } from "lucide-react";
 import AppLayout from "../../components/AppLayout";
-import { createJournalEntry } from "../../lib/database";
-import { getRandomPrompt, JOURNAL_PROMPTS } from "../../lib/utils";
+import { saveJournalEntry, handleApiError } from "../../lib/externalApi";
+import { JOURNAL_PROMPTS } from "../../lib/utils";
 import { supabase } from "../../lib/supabaseClient";
 
 export default function JournalPage() {
@@ -56,32 +56,20 @@ export default function JournalPage() {
     setLoading(true);
 
     try {
-      // APIを使用してジャーナルを保存
-      const response = await fetch("/api/journal", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          userId,
-          promptId: promptObj.code,
-          answer: content,
-        }),
-      });
+      // 外部APIを使用してジャーナルを保存
+      const result = await saveJournalEntry(userId, promptObj.code, content);
 
-      const result = await response.json();
-
-      if (!response.ok) {
-        console.error("ジャーナル保存エラー:", result.error);
-        alert(`ジャーナルの保存に失敗しました: ${result.error}`);
-      } else {
-        alert("ジャーナルを保存しました！");
-        setContent("");
-        getRandomPromptObj();
-      }
-    } catch (err) {
-      console.error("ジャーナル処理中にエラーが発生しました:", err);
-      alert("ジャーナルの保存に失敗しました");
+      console.log("ジャーナル保存成功:", result);
+      alert("ジャーナルを保存しました！");
+      setContent("");
+      getRandomPromptObj();
+    } catch (error) {
+      console.error("ジャーナル保存エラー:", error);
+      const errorMessage = handleApiError(
+        error,
+        "ジャーナルの保存に失敗しました"
+      );
+      alert(errorMessage);
     } finally {
       setLoading(false);
     }

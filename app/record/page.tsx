@@ -6,7 +6,7 @@ import { Check } from "lucide-react";
 import AppLayout from "../../components/AppLayout";
 import MoodSelector from "../../components/MoodSelector";
 import StressSlider from "../../components/StressSlider";
-import { createMoodEntry } from "../../lib/database";
+import { saveMoodEntry, handleApiError } from "../../lib/externalApi";
 import { supabase } from "../../lib/supabaseClient";
 import type { MoodLevel, StressLevel } from "../../lib/types";
 
@@ -50,32 +50,16 @@ export default function RecordPage() {
     setLoading(true);
 
     try {
-      // APIを使用して気分を保存
-      const response = await fetch("/api/mood", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          userId,
-          moodId: mood,
-          stressLevel: stress,
-          memo: memo || undefined,
-        }),
-      });
+      // 外部APIを使用して気分を保存
+      const result = await saveMoodEntry(userId, mood.toString(), stress);
 
-      const result = await response.json();
-
-      if (!response.ok) {
-        console.error("記録エラー:", result.error);
-        alert(`記録の保存に失敗しました: ${result.error}`);
-      } else {
-        alert("記録を保存しました！");
-        router.push("/dashboard");
-      }
-    } catch (err) {
-      console.error("記録処理中にエラーが発生しました:", err);
-      alert("記録の保存に失敗しました");
+      console.log("記録保存成功:", result);
+      alert("記録を保存しました！");
+      router.push("/dashboard");
+    } catch (error) {
+      console.error("記録エラー:", error);
+      const errorMessage = handleApiError(error, "記録の保存に失敗しました");
+      alert(errorMessage);
     } finally {
       setLoading(false);
     }
