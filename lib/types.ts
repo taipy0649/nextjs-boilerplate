@@ -33,6 +33,11 @@ export interface UserSettings {
   updated_at: string;
 }
 
+export interface JournalPrompt {
+  code: string;
+  prompt: string;
+}
+
 // UI関連の型
 export type MoodLevel = 1 | 2 | 3 | 4 | 5;
 export type StressLevel = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;

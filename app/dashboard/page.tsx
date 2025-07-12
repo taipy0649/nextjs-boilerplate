@@ -3,9 +3,9 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Plus, TrendingUp, BookOpen } from "lucide-react";
+import { Plus, BookOpen } from "lucide-react";
 import AppLayout from "../../components/AppLayout";
-import { getLatestMoodEntry, getTodayMoodEntries } from "../../lib/database";
+import { getLatestMoodEntry } from "../../lib/database";
 import { MOOD_OPTIONS, formatTime, getStressLevelColor } from "../../lib/utils";
 import { supabase } from "../../lib/supabaseClient";
 import type { MoodEntry } from "../../lib/types";
@@ -14,7 +14,6 @@ export default function DashboardPage() {
   const router = useRouter();
   const [user, setUser] = useState<any>(null);
   const [latestEntry, setLatestEntry] = useState<MoodEntry | null>(null);
-  const [todayEntries, setTodayEntries] = useState<MoodEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [mounted, setMounted] = useState(false);
 
@@ -29,14 +28,9 @@ export default function DashboardPage() {
       }
       setUser(data.session.user);
 
-      // データを取得
-      const [latestResult, todayResult] = await Promise.all([
-        getLatestMoodEntry(),
-        getTodayMoodEntries(),
-      ]);
-
+      // 最新のデータを取得
+      const latestResult = await getLatestMoodEntry();
       if (latestResult.data) setLatestEntry(latestResult.data);
-      if (todayResult.data) setTodayEntries(todayResult.data);
 
       setLoading(false);
     };
@@ -53,15 +47,6 @@ export default function DashboardPage() {
       </AppLayout>
     );
   }
-
-  // 今日の平均ストレスレベルを計算
-  const todayAvgStress =
-    todayEntries.length > 0
-      ? Math.round(
-          todayEntries.reduce((sum, entry) => sum + entry.stress_level, 0) /
-            todayEntries.length
-        )
-      : null;
 
   // 最新の気分を取得
   const latestMood = latestEntry
@@ -81,64 +66,37 @@ export default function DashboardPage() {
           </p>
         </div>
 
-        {/* 今日の概況 */}
-        <div className="bg-white rounded-lg p-6 shadow-sm">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">今日の状況</h3>
-
-          <div className="grid grid-cols-2 gap-4">
-            {/* 最新の気分 */}
-            <div className="text-center">
-              <div className="text-xs text-gray-500 mb-2">最新の気分</div>
-              {latestMood ? (
-                <>
-                  <div className="text-3xl mb-1">{latestMood.emoji}</div>
-                  <div className="text-xs text-gray-600">
-                    {latestMood.label}
-                  </div>
-                  {latestEntry && (
-                    <div className="text-xs text-gray-400 mt-1">
-                      {formatTime(latestEntry.created_at)}
-                    </div>
-                  )}
-                </>
-              ) : (
-                <div className="text-sm text-gray-400">記録なし</div>
-              )}
-            </div>
-
-            {/* 平均ストレスレベル */}
-            <div className="text-center">
-              <div className="text-xs text-gray-500 mb-2">平均ストレス</div>
-              {todayAvgStress ? (
-                <>
-                  <div
-                    className="w-8 h-8 rounded-full mx-auto mb-1 flex items-center justify-center text-white font-bold text-sm"
-                    style={{
-                      backgroundColor: getStressLevelColor(todayAvgStress),
-                    }}
-                  >
-                    {todayAvgStress}
-                  </div>
-                  <div className="text-xs text-gray-600">
-                    レベル {todayAvgStress}
-                  </div>
-                </>
-              ) : (
-                <div className="text-sm text-gray-400">記録なし</div>
-              )}
-            </div>
-          </div>
-
-          {/* 今日の記録数 */}
-          <div className="mt-4 pt-4 border-t border-gray-100">
-            <div className="text-center">
-              <div className="text-xs text-gray-500">今日の記録数</div>
-              <div className="text-lg font-semibold text-gray-900">
-                {todayEntries.length}回
+        {/* 最新の記録 */}
+        {latestEntry && (
+          <div className="bg-white rounded-lg p-6 shadow-sm">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">
+              最新の記録
+            </h3>
+            <div className="flex items-center justify-center space-x-4">
+              <div className="text-center">
+                <div className="text-3xl mb-1">{latestMood?.emoji}</div>
+                <div className="text-sm text-gray-600">{latestMood?.label}</div>
+              </div>
+              <div className="w-px h-12 bg-gray-200"></div>
+              <div className="text-center">
+                <div
+                  className="w-10 h-10 rounded-full mx-auto mb-1 flex items-center justify-center text-white font-bold"
+                  style={{
+                    backgroundColor: getStressLevelColor(
+                      latestEntry.stress_level
+                    ),
+                  }}
+                >
+                  {latestEntry.stress_level}
+                </div>
+                <div className="text-sm text-gray-600">ストレス</div>
               </div>
             </div>
+            <div className="text-center text-xs text-gray-400 mt-3">
+              {formatTime(latestEntry.created_at)}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* クイックアクション */}
         <div className="space-y-3">
@@ -158,19 +116,6 @@ export default function DashboardPage() {
                 </div>
               </div>
               <Plus size={24} />
-            </Link>
-
-            <Link
-              href="/analytics"
-              className="bg-white border border-gray-200 hover:border-gray-300 text-gray-900 rounded-lg p-4 flex items-center justify-between transition-colors"
-            >
-              <div>
-                <div className="font-medium">記録を分析</div>
-                <div className="text-sm text-gray-600">
-                  これまでの記録を確認しましょう
-                </div>
-              </div>
-              <TrendingUp size={24} />
             </Link>
 
             <Link

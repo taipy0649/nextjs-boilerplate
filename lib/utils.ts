@@ -1,4 +1,4 @@
-import type { MoodOption, MoodLevel } from "./types";
+import type { MoodOption, MoodLevel, JournalPrompt } from "./types";
 
 // 気分レベルの選択肢
 export const MOOD_OPTIONS: MoodOption[] = [
@@ -60,18 +60,26 @@ export const getStartDate = (period: "day" | "week" | "month"): Date => {
 };
 
 // ジャーナリングのプロンプト
-export const JOURNAL_PROMPTS = [
-  "今日感謝したいことは何ですか？",
-  "今日うまくいったことを教えてください",
-  "あなたを支えてくれる人について書いてください",
-  "今日学んだことは何ですか？",
-  "明日楽しみにしていることは何ですか？",
-  "あなたの強みを一つ教えてください",
-  "今日笑顔になった瞬間はありましたか？",
-  "今週達成したい小さな目標は何ですか？",
+export const JOURNAL_PROMPTS: JournalPrompt[] = [
+  { code: "gratitude", prompt: "今日感謝したいことは何ですか？" },
+  { code: "success", prompt: "今日うまくいったことを教えてください" },
+  { code: "support", prompt: "あなたを支えてくれる人について書いてください" },
+  { code: "learning", prompt: "今日学んだことは何ですか？" },
+  { code: "tomorrow", prompt: "明日楽しみにしていることは何ですか？" },
+  { code: "strength", prompt: "あなたの強みを一つ教えてください" },
+  { code: "smile", prompt: "今日笑顔になった瞬間はありましたか？" },
+  { code: "goal", prompt: "今週達成したい小さな目標は何ですか？" },
 ];
 
 // ランダムなプロンプトを取得
 export const getRandomPrompt = (): string => {
-  return JOURNAL_PROMPTS[Math.floor(Math.random() * JOURNAL_PROMPTS.length)];
+  const randomPrompt =
+    JOURNAL_PROMPTS[Math.floor(Math.random() * JOURNAL_PROMPTS.length)];
+  return randomPrompt.prompt;
+};
+
+// プロンプトをコードで取得
+export const getPromptByCode = (code: string): string => {
+  const promptObj = JOURNAL_PROMPTS.find((p) => p.code === code);
+  return promptObj ? promptObj.prompt : JOURNAL_PROMPTS[0].prompt;
 };

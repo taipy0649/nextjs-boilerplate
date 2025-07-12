@@ -118,6 +118,7 @@ export default function JournalPage() {
               onChange={(e) => setContent(e.target.value)}
               placeholder="ここに思ったことを自由に書いてみてください..."
               className="w-full p-4 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              style={{ color: "black" }}
               rows={8}
               maxLength={500}
             />

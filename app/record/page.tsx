@@ -12,8 +12,8 @@ import type { MoodLevel, StressLevel } from "../../lib/types";
 
 export default function RecordPage() {
   const router = useRouter();
-  const [mood, setMood] = useState<MoodLevel | null>(null);
-  const [stress, setStress] = useState<StressLevel | null>(null);
+  const [mood, setMood] = useState<MoodLevel | null>(3); // デフォルト値：真ん中（ふつう）
+  const [stress, setStress] = useState<StressLevel | null>(5); // デフォルト値：5
   const [memo, setMemo] = useState("");
   const [loading, setLoading] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -34,15 +34,14 @@ export default function RecordPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!mood || !stress) {
-      alert("気分とストレスレベルを選択してください");
-      return;
-    }
-
     setLoading(true);
 
     try {
-      const { error } = await createMoodEntry(mood, stress, memo || undefined);
+      const { error } = await createMoodEntry(
+        mood!,
+        stress!,
+        memo || undefined
+      );
 
       if (error) {
         console.error("記録エラー:", error);
@@ -69,8 +68,6 @@ export default function RecordPage() {
     );
   }
 
-  const isFormValid = mood && stress;
-
   return (
     <AppLayout title="記録入力">
       <form onSubmit={handleSubmit} className="space-y-8">
@@ -94,6 +91,7 @@ export default function RecordPage() {
             onChange={(e) => setMemo(e.target.value)}
             placeholder="今の状況や感情について書いてみましょう..."
             className="w-full p-3 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            style={{ color: "black" }}
             rows={4}
             maxLength={200}
           />
@@ -105,9 +103,9 @@ export default function RecordPage() {
         {/* 保存ボタン */}
         <button
           type="submit"
-          disabled={!isFormValid || loading}
+          disabled={loading}
           className={`w-full py-4 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors ${
-            isFormValid && !loading
+            !loading
               ? "bg-blue-500 hover:bg-blue-600 text-white"
               : "bg-gray-300 text-gray-500 cursor-not-allowed"
           }`}

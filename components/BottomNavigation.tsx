@@ -2,14 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Plus, BarChart, BookOpen, Settings } from "lucide-react";
+import { Home, Plus, BookOpen } from "lucide-react";
 
 const NAV_ITEMS = [
   { href: "/dashboard", icon: Home, label: "ホーム" },
   { href: "/record", icon: Plus, label: "記録" },
-  { href: "/analytics", icon: BarChart, label: "分析" },
   { href: "/journal", icon: BookOpen, label: "ジャーナル" },
-  { href: "/settings", icon: Settings, label: "設定" },
 ];
 
 export default function BottomNavigation() {
