@@ -31,9 +31,9 @@ export default function Home() {
           ) : user ? (
             <div className="flex gap-4">
               <span className="p-2">{user.email}</span>
-              <Link href="/login-success">
+              <Link href="/dashboard">
                 <button className="rounded-full border border-solid border-green-500 bg-green-500 text-white px-6 py-2 font-semibold hover:bg-green-600 transition-colors">
-                  マイページ
+                  ダッシュボード
                 </button>
               </Link>
             </div>
