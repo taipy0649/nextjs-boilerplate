@@ -54,6 +54,11 @@ export default function JournalPage() {
     }
 
     setLoading(true);
+    console.log("ジャーナル記録開始:", {
+      userId,
+      promptId: promptObj.code,
+      content,
+    });
 
     try {
       // 外部APIを使用してジャーナルを保存

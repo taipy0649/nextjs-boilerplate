@@ -48,6 +48,7 @@ export default function RecordPage() {
     }
 
     setLoading(true);
+    console.log("気分記録開始:", { userId, mood, stress, memo });
 
     try {
       // 外部APIを使用して気分を保存
